@@ -1,40 +1,116 @@
 <!DOCTYPE html>
-<html>
+<html lang="vi">
 <head>
 <meta charset="UTF-8">
-<title>RSA BigInt Demo</title>
+<title>RSA Demo</title>
+
+<style>
+body{
+    font-family: Arial, sans-serif;
+    background:#f4f6f9;
+    padding:20px;
+}
+
+.container{
+    max-width:600px;
+    margin:auto;
+    background:white;
+    padding:25px;
+    border-radius:10px;
+    box-shadow:0 4px 15px rgba(0,0,0,0.1);
+}
+
+h2{
+    text-align:center;
+    margin-bottom:20px;
+}
+
+label{
+    font-weight:bold;
+}
+
+input{
+    width:100%;
+    padding:10px;
+    margin-top:5px;
+    margin-bottom:15px;
+    border:1px solid #ccc;
+    border-radius:6px;
+    font-size:14px;
+}
+
+button{
+    width:100%;
+    padding:12px;
+    background:#2d7dd2;
+    color:white;
+    border:none;
+    border-radius:6px;
+    font-size:15px;
+    cursor:pointer;
+    transition:0.3s;
+}
+
+button:hover{
+    background:#1c5fa8;
+}
+
+.result{
+    background:#eef3f9;
+    padding:10px;
+    border-radius:6px;
+    margin-top:10px;
+    font-weight:bold;
+}
+hr{
+    margin:25px 0;
+}
+</style>
 </head>
+
 <body>
+
+<div class="container">
 
 <h2>RSA Demo (BigInt)</h2>
 
-p: <input type="number" id="p" value="17"><br><br>
-q: <input type="number" id="q" value="11"><br><br>
-e: <input type="number" id="e" value="27"><br><br>
+<label>Nhập p</label>
+<input type="number" id="p" value="17">
+
+<label>Nhập q</label>
+<input type="number" id="q" value="11">
+
+<label>Nhập e</label>
+<input type="number" id="e" value="27">
 
 <button onclick="createKey()">Tạo khóa</button>
 
-<p id="keyInfo"></p>
+<div id="keyInfo" class="result"></div>
 
 <hr>
 
-Text: <input type="text" id="plain" value="Hello">
+<label>Nhập chữ cần mã hóa</label>
+<input type="text" id="plain" value="Hello">
+
 <button onclick="encrypt()">Mã hóa</button>
-<p id="cipher"></p>
+
+<div id="cipher" class="result"></div>
 
 <hr>
 
-Cipher: <input type="text" id="cipherInput">
+<label>Nhập cipher để giải mã</label>
+<input type="text" id="cipherInput">
+
 <button onclick="decrypt()">Giải mã</button>
-<p id="result"></p>
+
+<div id="result" class="result"></div>
+
+</div>
 
 <script>
 
 let n, phi, e, d;
 
-// =================
-// MOD POW BigInt
-// =================
 function modPow(base, exp, mod) {
     base = BigInt(base);
     exp = BigInt(exp);
@@ -53,9 +129,6 @@ function modPow(base, exp, mod) {
     return result;
 }
 
-// =================
-// GCD
-// =================
 function gcd(a, b) {
     while (b !== 0n) {
         let temp = b;
@@ -65,9 +138,6 @@ function gcd(a, b) {
     return a;
 }
 
-// =================
-// FIND D
-// =================
 function findD(e, phi) {
     for (let i = 1n; i < phi; i++) {
         if ((i * e) % phi === 1n)
@@ -76,9 +146,6 @@ function findD(e, phi) {
     return null;
 }
 
-// =================
-// CREATE KEY
-// =================
 function createKey() {
     let p = BigInt(document.getElementById("p").value);
     let q = BigInt(document.getElementById("q").value);
@@ -88,7 +155,7 @@ function createKey() {
     phi = (p - 1n) * (q - 1n);
 
     if (gcd(e, phi) !== 1n) {
-        alert("e không nguyên tố cùng nhau với phi");
+        alert("e không nguyên tố cùng nhau với phi(n)");
         return;
     }
 
@@ -96,13 +163,10 @@ function createKey() {
 
     document.getElementById("keyInfo").innerHTML =
         "n = " + n +
-        "<br>phi = " + phi +
+        "<br>φ(n) = " + phi +
         "<br>d = " + d;
 }
 
-// =================
-// ENCRYPT
-// =================
 function encrypt() {
     let text = document.getElementById("plain").value;
     let result = [];
@@ -118,9 +182,6 @@ function encrypt() {
     document.getElementById("cipherInput").value = cipher;
 }
 
-// =================
-// DECRYPT
-// =================
 function decrypt() {
     let cipher = document.getElementById("cipherInput").value;
     let parts = cipher.split(" ");
