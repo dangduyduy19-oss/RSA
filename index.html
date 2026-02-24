@@ -1,143 +1,63 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <meta charset="UTF-8">
-    <title>RSA Demo</title>
+<meta charset="UTF-8">
+<title>RSA BigInt Demo</title>
 </head>
 <body>
 
-<h2>RSA Demo</h2>
+<h2>RSA Demo (BigInt)</h2>
 
-<p>Nhập p:</p>
-<input type="number" id="p" value="17">
+p: <input type="number" id="p" value="17"><br><br>
+q: <input type="number" id="q" value="11"><br><br>
+e: <input type="number" id="e" value="27"><br><br>
 
-<p>Nhập q:</p>
-<input type="number" id="q" value="11">
-
-<p>Nhập e:</p>
-<input type="number" id="e" value="27">
-
-<br><br>
 <button onclick="createKey()">Tạo khóa</button>
 
 <p id="keyInfo"></p>
 
 <hr>
 
-<p>Nhập chữ cần mã hóa:</p>
-<input type="text" id="plainText" value="Hello">
-<br><br>
-<button onclick="encryptText()">Mã hóa</button>
-
-<p id="cipherText"></p>
+Text: <input type="text" id="plain" value="Hello">
+<button onclick="encrypt()">Mã hóa</button>
+<p id="cipher"></p>
 
 <hr>
 
-<p>Nhập cipher để giải mã:</p>
-<input type="text" id="cipherInput">
-<br><br>
-<button onclick="decryptText()">Giải mã</button>
-
-<p id="decryptedText"></p>
+Cipher: <input type="text" id="cipherInput">
+<button onclick="decrypt()">Giải mã</button>
+<p id="result"></p>
 
 <script>
 
 let n, phi, e, d;
 
-// =======================
-// MODULAR EXPONENTIATION
-// =======================
+// =================
+// MOD POW BigInt
+// =================
 function modPow(base, exp, mod) {
-    let result = 1;
+    base = BigInt(base);
+    exp = BigInt(exp);
+    mod = BigInt(mod);
+
+    let result = 1n;
     base = base % mod;
 
-    while (exp > 0) {
-        if (exp % 2 === 1) {
+    while (exp > 0n) {
+        if (exp % 2n === 1n)
             result = (result * base) % mod;
-        }
-        exp = Math.floor(exp / 2);
+
+        exp = exp / 2n;
         base = (base * base) % mod;
     }
     return result;
 }
 
-// =======================
-// TÌM d
-// =======================
-function findD(e, phi) {
-    for (let i = 1; i < phi; i++) {
-        if ((i * e) % phi === 1) {
-            return i;
-        }
-    }
-    return null;
-}
-
-// =======================
-// TẠO KHÓA
-// =======================
-function createKey() {
-    let p = parseInt(document.getElementById("p").value);
-    let q = parseInt(document.getElementById("q").value);
-    e = parseInt(document.getElementById("e").value);
-
-    n = p * q;
-    phi = (p - 1) * (q - 1);
-
-    if (gcd(e, phi) !== 1) {
-        alert("e không nguyên tố cùng nhau với phi(n)");
-        return;
-    }
-
-    d = findD(e, phi);
-
-    document.getElementById("keyInfo").innerHTML =
-        "n = " + n +
-        "<br>phi(n) = " + phi +
-        "<br>d = " + d;
-}
-
-// =======================
-// MÃ HÓA
-// =======================
-function encryptText() {
-    let text = document.getElementById("plainText").value;
-    let result = [];
-
-    for (let i = 0; i < text.length; i++) {
-        let m = text.charCodeAt(i);
-        let c = modPow(m, e, n);
-        result.push(c);
-    }
-
-    let cipher = result.join(" ");
-    document.getElementById("cipherText").innerHTML = "Cipher: " + cipher;
-    document.getElementById("cipherInput").value = cipher;
-}
-
-// =======================
-// GIẢI MÃ
-// =======================
-function decryptText() {
-    let cipher = document.getElementById("cipherInput").value;
-    let parts = cipher.split(" ");
-    let result = "";
-
-    for (let i = 0; i < parts.length; i++) {
-        let c = parseInt(parts[i]);
-        let m = modPow(c, d, n);
-        result += String.fromCharCode(m);
-    }
-
-    document.getElementById("decryptedText").innerHTML =
-        "Giải mã: " + result;
-}
-
-// =======================
+// =================
 // GCD
-// =======================
+// =================
 function gcd(a, b) {
-    while (b !== 0) {
+    while (b !== 0n) {
         let temp = b;
         b = a % b;
         a = temp;
@@ -145,8 +65,78 @@ function gcd(a, b) {
     return a;
 }
 
+// =================
+// FIND D
+// =================
+function findD(e, phi) {
+    for (let i = 1n; i < phi; i++) {
+        if ((i * e) % phi === 1n)
+            return i;
+    }
+    return null;
+}
+
+// =================
+// CREATE KEY
+// =================
+function createKey() {
+    let p = BigInt(document.getElementById("p").value);
+    let q = BigInt(document.getElementById("q").value);
+    e = BigInt(document.getElementById("e").value);
+
+    n = p * q;
+    phi = (p - 1n) * (q - 1n);
+
+    if (gcd(e, phi) !== 1n) {
+        alert("e không nguyên tố cùng nhau với phi");
+        return;
+    }
+
+    d = findD(e, phi);
+
+    document.getElementById("keyInfo").innerHTML =
+        "n = " + n +
+        "<br>phi = " + phi +
+        "<br>d = " + d;
+}
+
+// =================
+// ENCRYPT
+// =================
+function encrypt() {
+    let text = document.getElementById("plain").value;
+    let result = [];
+
+    for (let i = 0; i < text.length; i++) {
+        let m = BigInt(text.charCodeAt(i));
+        let c = modPow(m, e, n);
+        result.push(c.toString());
+    }
+
+    let cipher = result.join(" ");
+    document.getElementById("cipher").innerHTML = "Cipher: " + cipher;
+    document.getElementById("cipherInput").value = cipher;
+}
+
+// =================
+// DECRYPT
+// =================
+function decrypt() {
+    let cipher = document.getElementById("cipherInput").value;
+    let parts = cipher.split(" ");
+    let result = "";
+
+    for (let part of parts) {
+        let c = BigInt(part);
+        let m = modPow(c, d, n);
+        result += String.fromCharCode(Number(m));
+    }
+
+    document.getElementById("result").innerHTML =
+        "Giải mã: " + result;
+}
+
 </script>
 
 </body>
-    </html>
-    
+</html>
