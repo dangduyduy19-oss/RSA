@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>RSA Demo</title>
+<style>
+body { font-family: Arial; padding: 20px; }
+input, button { padding: 8px; margin: 5px 0; width: 100%; }
+button { background: #1976d2; color: white; border: none; }
+.result { margin-top: 10px; font-weight: bold; }
+</style>
+</head>
+<body>
+
+<h2>RSA Demo (Text Encryption)</h2>
+
+<h3>Nhập p, q, e</h3>
+<input id="p" placeholder="p (ví dụ 17)">
+<input id="q" placeholder="q (ví dụ 11)">
+<input id="e" placeholder="e (ví dụ 7)">
+<button onclick="generateKeys()">Tạo khóa</button>
+
+<div class="result" id="keys"></div>
+
+<hr>
+
+<h3>Nhập chữ cần mã hóa</h3>
+<input id="plaintext" placeholder="Ví dụ: HELLO">
+<button onclick="encrypt()">Mã hóa</button>
+
+<div class="result" id="cipher"></div>
+
+<hr>
+
+<h3>Giải mã</h3>
+<button onclick="decrypt()">Giải mã</button>
+<div class="result" id="decrypted"></div>
+
+<script>
+
+let n, phi, e, d;
+let cipherArray = [];
+
+// Tìm gcd
+function gcd(a,b){
+    while(b!=0){
+        let t = b;
+        b = a % b;
+        a = t;
+    }
+    return a;
+}
+
+// Tìm nghịch đảo modulo
+function modInverse(e,phi){
+    for(let i=1;i<phi;i++){
+        if((e*i)%phi==1) return i;
+    }
+}
+
+// Lũy thừa modulo
+function modPow(base, exp, mod){
+    let result = 1;
+    base = base % mod;
+    while(exp > 0){
+        if(exp % 2 == 1)
+            result = (result * base) % mod;
+        exp = Math.floor(exp / 2);
+        base = (base * base) % mod;
+    }
+    return result;
+}
+
+function generateKeys(){
+    let pVal = parseInt(document.getElementById("p").value);
+    let qVal = parseInt(document.getElementById("q").value);
+    e = parseInt(document.getElementById("e").value);
+
+    n = pVal * qVal;
+    phi = (pVal-1)*(qVal-1);
+
+    if(gcd(e,phi)!=1){
+        alert("e không hợp lệ!");
+        return;
+    }
+
+    d = modInverse(e,phi);
+
+    document.getElementById("keys").innerHTML =
+        "n = "+n+"<br>φ(n) = "+phi+"<br>d = "+d;
+}
+
+function encrypt(){
+    let text = document.getElementById("plaintext").value;
+    cipherArray = [];
+
+    for(let i=0;i<text.length;i++){
+        let m = text.charCodeAt(i);
+        if(m >= n){
+            alert("Ký tự quá lớn so với n!");
+            return;
+        }
+        let c = modPow(m,e,n);
+        cipherArray.push(c);
+    }
+
+    document.getElementById("cipher").innerHTML =
+        "Cipher: " + cipherArray.join(" ");
+}
+
+function decrypt(){
+    let result = "";
+
+    for(let i=0;i<cipherArray.length;i++){
+        let m = modPow(cipherArray[i],d,n);
+        result += String.fromCharCode(m);
+    }
+
+    document.getElementById("decrypted").innerHTML =
+        "Giải mã: " + result;
+}
+
+</script>
+
+</body>
+  </html>
+  
