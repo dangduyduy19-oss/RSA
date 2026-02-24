@@ -8,16 +8,21 @@ body { font-family: Arial; padding: 20px; }
 input, button { padding: 8px; margin: 5px 0; width: 100%; }
 button { background: #1976d2; color: white; border: none; }
 .result { margin-top: 10px; font-weight: bold; }
+small { color: gray; }
 </style>
 </head>
 <body>
 
 <h2>RSA Demo (Text Encryption)</h2>
 
-<h3>Nhập p, q, e</h3>
+<h3>Nhập p, q</h3>
 <input id="p" placeholder="p (ví dụ 17)">
 <input id="q" placeholder="q (ví dụ 11)">
-<input id="e" placeholder="e (ví dụ 7)">
+<button onclick="suggestE()">Gợi ý e</button>
+
+<div class="result" id="suggestion"></div>
+
+<input id="e" placeholder="Chọn e từ gợi ý trên">
 <button onclick="generateKeys()">Tạo khóa</button>
 
 <div class="result" id="keys"></div>
@@ -33,15 +38,15 @@ button { background: #1976d2; color: white; border: none; }
 <hr>
 
 <h3>Giải mã</h3>
+<input id="cipherInput" placeholder="Nhập dãy số cipher cách nhau bằng dấu cách">
 <button onclick="decrypt()">Giải mã</button>
+
 <div class="result" id="decrypted"></div>
 
 <script>
 
 let n, phi, e, d;
-let cipherArray = [];
 
-// Tìm gcd
 function gcd(a,b){
     while(b!=0){
         let t = b;
@@ -51,14 +56,12 @@ function gcd(a,b){
     return a;
 }
 
-// Tìm nghịch đảo modulo
 function modInverse(e,phi){
     for(let i=1;i<phi;i++){
         if((e*i)%phi==1) return i;
     }
 }
 
-// Lũy thừa modulo
 function modPow(base, exp, mod){
     let result = 1;
     base = base % mod;
@@ -69,6 +72,29 @@ function modPow(base, exp, mod){
         base = (base * base) % mod;
     }
     return result;
+}
+
+function suggestE(){
+    let pVal = parseInt(document.getElementById("p").value);
+    let qVal = parseInt(document.getElementById("q").value);
+
+    if(!pVal || !qVal){
+        alert("Nhập p và q trước!");
+        return;
+    }
+
+    phi = (pVal-1)*(qVal-1);
+    let validE = [];
+
+    for(let i=2;i<phi;i++){
+        if(gcd(i,phi)==1){
+            validE.push(i);
+        }
+    }
+
+    document.getElementById("suggestion").innerHTML =
+        "φ(n) = " + phi + "<br>e hợp lệ: " + validE.slice(0,10).join(", ") +
+        "<br><small>(hiển thị 10 giá trị đầu)</small>";
 }
 
 function generateKeys(){
@@ -92,7 +118,7 @@ function generateKeys(){
 
 function encrypt(){
     let text = document.getElementById("plaintext").value;
-    cipherArray = [];
+    let cipherArray = [];
 
     for(let i=0;i<text.length;i++){
         let m = text.charCodeAt(i);
@@ -109,10 +135,12 @@ function encrypt(){
 }
 
 function decrypt(){
+    let cipherText = document.getElementById("cipherInput").value.trim();
+    let numbers = cipherText.split(" ");
     let result = "";
 
-    for(let i=0;i<cipherArray.length;i++){
-        let m = modPow(cipherArray[i],d,n);
+    for(let i=0;i<numbers.length;i++){
+        let m = modPow(parseInt(numbers[i]),d,n);
         result += String.fromCharCode(m);
     }
 
@@ -123,5 +151,4 @@ function decrypt(){
 </script>
 
 </body>
-  </html>
-  
+</html>
